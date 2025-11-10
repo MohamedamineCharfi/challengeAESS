@@ -1,0 +1,21 @@
+/* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(180deg, #0f172a 0%, #071025 100%) !important;
+  color: #e6eef8 !important;
+}
+
+app-root {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}

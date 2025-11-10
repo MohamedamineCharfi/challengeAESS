@@ -1,0 +1,188 @@
+<div class="dashboard-wrapper">
+  <mat-sidenav-container class="sidenav-container">
+    <!-- Sidebar Menu -->
+    <mat-sidenav #sidenav class="sidenav" mode="side" opened="true">
+      <div class="sidebar-header">
+        <h1 class="logo">CubeSat</h1>
+        <p class="logo-subtitle">Dashboard</p>
+      </div>
+
+      <mat-nav-list>
+        <mat-list-item routerLink="/" routerLinkActive="active">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </mat-list-item>
+        <mat-list-item routerLink="/satellites" routerLinkActive="active">
+          <mat-icon matListItemIcon>satellite</mat-icon>
+          <span matListItemTitle>Satellites</span>
+        </mat-list-item>
+        <mat-list-item routerLink="/analytics" routerLinkActive="active">
+          <mat-icon matListItemIcon>analytics</mat-icon>
+          <span matListItemTitle>Analytics</span>
+        </mat-list-item>
+        <mat-list-item routerLink="/settings" routerLinkActive="active">
+          <mat-icon matListItemIcon>settings</mat-icon>
+          <span matListItemTitle>Settings</span>
+        </mat-list-item>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <!-- Main Content -->
+    <mat-sidenav-content class="sidenav-content">
+      <!-- Top Navigation Bar -->
+      <mat-toolbar class="top-navbar">
+        <button mat-icon-button (click)="sidenav.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="spacer"></span>
+        <span class="navbar-title">CubeSat Health Monitoring</span>
+        <span class="spacer"></span>
+        <button mat-icon-button>
+          <mat-icon matBadge="3" matBadgeColor="warn">notifications</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon>account_circle</mat-icon>
+        </button>
+      </mat-toolbar>
+
+      <!-- Dashboard Content -->
+      <div class="content">
+        <div class="content-header">
+          <h1>Dashboard</h1>
+          <p class="subtitle">Real-time CubeSat fleet health overview</p>
+        </div>
+
+        <!-- Key Metrics Row -->
+        <div class="metrics-grid">
+          <mat-card class="metric-card" *ngFor="let metric of metrics$ | async">
+            <mat-card-content class="metric-content">
+              <div class="metric-value">{{ metric.value }}{{ metric.unit }}</div>
+              <div class="metric-label">{{ metric.label }}</div>
+              <span class="metric-trend" [ngClass]="'trend-' + metric.trend">
+                <mat-icon *ngIf="metric.trend === 'up'">trending_up</mat-icon>
+                <mat-icon *ngIf="metric.trend === 'down'">trending_down</mat-icon>
+                <mat-icon *ngIf="metric.trend === 'stable'">trending_flat</mat-icon>
+              </span>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <!-- Trend Chart -->
+          <mat-card class="chart-card full-width">
+            <mat-card-header>
+              <mat-card-title>Health Trend</mat-card-title>
+              <mat-card-subtitle>24-hour satellite health overview</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container">
+                <canvas baseChart
+                  [data]="trendChartData"
+                  [options]="trendChartOptions"
+                  type="line">
+                </canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Satellite Cards Row -->
+        <div class="satellites-header">
+          <h2>Satellites Status</h2>
+        </div>
+        <mat-grid-list cols="2" rowHeight="400px" gutterSize="16" class="satellites-grid">
+          <mat-grid-tile *ngFor="let sat of satellites$ | async">
+            <mat-card class="satellite-card">
+              <mat-card-header class="sat-header">
+                <mat-card-title class="sat-name">{{ sat.name }}</mat-card-title>
+                <span class="status-badge" [ngClass]="getStatusBadgeClass(sat.status)">
+                  {{ sat.status | uppercase }}
+                </span>
+              </mat-card-header>
+
+              <mat-card-content class="sat-content">
+                <!-- Health Donut Chart -->
+                <div class="health-chart">
+                  <canvas baseChart
+                    [data]="donutCharts[sat.id]"
+                    [options]="donutOptions"
+                    type="doughnut">
+                  </canvas>
+                  <div class="health-text">
+                    <span class="health-value">{{ sat.health }}%</span>
+                    <span class="health-label">Health</span>
+                  </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="metrics-list">
+                  <div *ngFor="let metric of getMetricsForSatellite(sat)" class="metric-row">
+                    <span class="metric-name">{{ metric.name }}</span>
+                    <mat-progress-bar 
+                      mode="determinate" 
+                      [value]="metric.value"
+                      [ngClass]="'bar-' + metric.name.toLowerCase()">
+                    </mat-progress-bar>
+                    <span class="metric-percent">{{ metric.value }}%</span>
+                  </div>
+                </div>
+
+                <!-- Systems Status -->
+                <div class="systems-status">
+                  <h4>Systems</h4>
+                  <mat-list>
+                    <mat-list-item *ngFor="let system of sat.systems" class="system-item">
+                      <span class="system-name">{{ system.name }}</span>
+                      <span class="system-status" [style.color]="getHealthColor(system.status)">
+                        {{ system.status }}%
+                      </span>
+                    </mat-list-item>
+                  </mat-list>
+                </div>
+
+                <!-- Last Update -->
+                <div class="last-update">
+                  Last update: {{ sat.lastUpdate | date:'short' }}
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </mat-grid-tile>
+        </mat-grid-list>
+
+        <!-- Fleet Summary Table -->
+        <mat-card class="summary-card">
+          <mat-card-header>
+            <mat-card-title>Fleet Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-table">
+              <div class="summary-row header">
+                <span class="col-name">Satellite</span>
+                <span class="col-health">Health</span>
+                <span class="col-power">Power</span>
+                <span class="col-temp">Temp</span>
+                <span class="col-data">Data TX</span>
+                <span class="col-status">Status</span>
+              </div>
+              <div class="summary-row" *ngFor="let sat of satellites$ | async">
+                <span class="col-name">{{ sat.name }}</span>
+                <span class="col-health">
+                  <span class="health-badge" [style.color]="getHealthColor(sat.health)">{{ sat.health }}%</span>
+                </span>
+                <span class="col-power">{{ sat.power }}%</span>
+                <span class="col-temp">{{ sat.temperature }}°C</span>
+                <span class="col-data">{{ sat.dataTransmission }}%</span>
+                <span class="col-status">
+                  <span class="status-badge small" [ngClass]="getStatusBadgeClass(sat.status)">
+                    {{ sat.status }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
