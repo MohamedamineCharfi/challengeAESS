@@ -1,0 +1,33 @@
+.env/
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.ipynb_checkpoints/
+.ide* 
+.vscode/
+.DS_Store
+*.egg-info/
+dist/
+build/
+
+# IDE/editor files
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Python virtual environment directories (common names)
+.env/
+.venv/
+venv/
+ENV/
+
+# Satellite input or other local-only artifacts (optional)
+# satellite_input.json
+

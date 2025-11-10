@@ -1,0 +1,11 @@
+{
+  "name": "UGUISU",
+  "values": {
+    "vbatt": 5.5,
+    "ibatt": -2.0,
+    "tbatt": 25.0,
+    "vpx": 3.1,
+    "ipx": 0.05,
+    "tpx": 22.0
+  }
+}
